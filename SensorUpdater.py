@@ -1,11 +1,10 @@
-import threading
 import smbus2
 import bme280
 import time
 import logging
 
-class SensorUpdater(threading.Thread):
-    def __init__(self, sample_time):
+class SensorUpdater:
+    def __init__(self):
         super().__init__()
         self.__logger = logging.getLogger(self.__class__.__name__)
         self.__i2c_bus = smbus2.SMBus(1)
@@ -15,21 +14,12 @@ class SensorUpdater(threading.Thread):
         self.__bme280.update_sensor()
         time.sleep(0.1)
         self.__bme280.update_sensor()
-        self.__sample_time = sample_time
-        self.__stop = threading.Event()
-
-    def run(self):
-        while not self.__stop.is_set():
-            try:
-                self.__bme280.update_sensor()
-                self.__stop.wait(self.__sample_time)
-            except Exception as ex:
-                #some error occured, log the exception and keep trying
-                self.__logger.error(ex)
-    def stop(self):
-        self.__stop.set()
-        self.__i2c_bus.close()
-
+    def update(self):
+        try:
+            self.__bme280.update_sensor()
+        except Exception as ex:
+            #some error occured, log the exception and keep trying
+            self.__logger.error(ex)
     @property
     def bme280(self):
         return self.__bme280

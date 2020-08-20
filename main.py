@@ -1,10 +1,12 @@
 #! /usr/bin/python3
+from UpdateScheduler import UpdateScheduler
 from SensorUpdater import SensorUpdater
-from DBWriter import DBWriter
+from DatabaseUpdater import DatabaseUpdater
 from HapPublisher import HapPublisher
 from AudioController import AudioController
 from WeatherUpdater import WetherUpdater
 from DisplayUpdater import DisplayUpdater
+from ApiManager import ApiManager
 import signal
 import logging, logging.handlers
 import sys
@@ -32,36 +34,34 @@ db = tinydb.TinyDB(db_file, indent=4)
 #signal handler
 def signal_handler(sig_num, stack_frame):
     if sig_num == signal.SIGINT or sig_num == signal.SIGTERM:
-        sensor_updater.stop()
-        db_writer.stop()
-        audio_controller.stop()
         hap_publisher.stop()
-        weather_updater.stop()
-        display_updater.stop()
+        api_manager.stop()
+        update_scheduler.stop()
 
 #register the signal handler for SIGINT and SIGTERM
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
-#initialize treads
-sensor_updater = SensorUpdater(2)
-db_writer = DBWriter(db.table('influxdb-connection').get(doc_id=1), 5, sensor_updater.bme280)
-hap_publisher = HapPublisher(sensor_updater.bme280)
+#initialize audio controller
 audio_controller = AudioController(db.table('radio-stations'), db.table('alarms'))
-weather_updater = WetherUpdater(60 * 60 * 3) # 3 hours
-display_updater = DisplayUpdater(0.25, db.table('display-resources').get(doc_id=1), sensor_updater.bme280, weather_updater, audio_controller)
+#initialize updaters
+sensor_updater = SensorUpdater()
+database_updater = DatabaseUpdater(db.table('influxdb-connection').get(doc_id=1), sensor_updater.bme280)
+weather_updater = WetherUpdater()
+display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater.bme280, weather_updater, audio_controller)
+#initialize other tasks
+update_scheduler = UpdateScheduler()
+update_scheduler.add_task(2, sensor_updater)
+update_scheduler.add_task(5, database_updater)
+update_scheduler.add_task(60 * 60 * 3, weather_updater) #3 hours
+update_scheduler.add_task(0.25, display_updater)
+hap_publisher = HapPublisher(sensor_updater.bme280)
+api_manager = ApiManager(audio_controller)
     
-#start threads
-sensor_updater.start()
-db_writer.start()
-audio_controller.start()
+#start tasks
 hap_publisher.start()
-weather_updater.start()
-display_updater.start()
+api_manager.start()
+update_scheduler.start() #this call is blocking, must be last
 
 #wait for threads to exit
-sensor_updater.join()
-db_writer.join()
-audio_controller.join()
-weather_updater.join()
-display_updater.join()
+api_manager.join()

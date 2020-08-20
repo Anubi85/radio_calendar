@@ -2,12 +2,9 @@ import falcon
 import mpd
 import tinydb
 import json
-import wsgiref.simple_server
-import threading
 
-class AudioController(threading.Thread):
+class AudioController:
     def __init__(self, stations_db, alarms_db):
-        super().__init__()
         self.__station_db = stations_db
         self.__alarms_db = alarms_db
         self.__current_station_id = None
@@ -20,17 +17,6 @@ class AudioController(threading.Thread):
         #reset the station list on mpd
         self.__exec_mpd_command('stop')
         self.__exec_mpd_command('clear')
-        #initialize REST API
-        api = falcon.API()
-        api.add_route('/v1/radio/stations', self, suffix='stations')
-        api.add_route('/v1/radio/stations/{id:int}', self, suffix='stations_id')
-        api.add_route('/v1/radio/status', self, suffix='status')
-        self.__server = wsgiref.simple_server.make_server('0.0.0.0', 8585, api)
-
-    def run(self):
-        self.__server.serve_forever()
-    def stop(self):
-        self.__server.shutdown()
 
     def __exec_mpd_command(self, cmd, *args):
         self.__mpc.connect('/run/mpd/socket')

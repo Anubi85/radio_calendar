@@ -1,6 +1,5 @@
 from inky import InkyPHAT
 from PIL import Image
-import threading
 import time
 import os
 import re
@@ -33,7 +32,7 @@ class Icon:
         else:
             return None
 
-class DisplayUpdater(threading.Thread):
+class DisplayUpdater:
     __SENSOR_FONT1 = 0
     __SENSOR_FONT2 = 1
     __TIME_FONT1 = 2
@@ -44,10 +43,9 @@ class DisplayUpdater(threading.Thread):
     __MONTH_FONT = 7
     __WEEK_DAY_FONT = 8
 
-    def __init__(self, refresh_interval, display_resources, bme280, weather_info, audio_controller):
+    def __init__(self, display_resources, bme280, weather_info, audio_controller):
         super().__init__()
         self.__resources = display_resources
-        self.__refresh_interval = refresh_interval
         self.__bme280 = bme280
         self.__weather_info = weather_info
         self.__audio_controller = audio_controller
@@ -66,7 +64,6 @@ class DisplayUpdater(threading.Thread):
                 self.__weather_icons_day[code] = day
                 self.__weather_icons_night[code] = night
         self.__alarm_icon = Icon(self.__resources['alarm-icon'])
-        self.__stop = threading.Event()
         self.__old_temperature = None
         self.__old_humidity = None
         self.__old_pressure = None
@@ -238,7 +235,17 @@ class DisplayUpdater(threading.Thread):
                 self.__draw_icon(self.__alarm_icon['clear'], (126,21))
         self.__old_is_alarm_set = tmp
         return res
-    def __refresh_screen(self):
+    def __draw_digit(self, font, position, clean_value, value):
+        self.__screen_image.paste(font['clear'], position, font[clean_value])
+        if value != None:
+            self.__screen_image.paste(font['draw'], position, font[value])
+    def __draw_label(self, font, position, value):
+        self.__screen_image.paste(font['clear'], position)
+        if value != None:
+            self.__screen_image.paste(font['draw'], position, font[value])
+    def __draw_icon(self, icon, position):
+        self.__screen_image.paste(icon, position)
+    def update(self):
         refresh_needed = False
         refresh_needed |= self.__refresh_temperature()
         refresh_needed |= self.__refresh_humidity()
@@ -250,19 +257,3 @@ class DisplayUpdater(threading.Thread):
         if refresh_needed:
             self.__display.set_image(self.__screen_image)
             self.__display.show()
-    def __draw_digit(self, font, position, clean_value, value):
-        self.__screen_image.paste(font['clear'], position, font[clean_value])
-        if value != None:
-            self.__screen_image.paste(font['draw'], position, font[value])
-    def __draw_label(self, font, position, value):
-        self.__screen_image.paste(font['clear'], position)
-        if value != None:
-            self.__screen_image.paste(font['draw'], position, font[value])
-    def __draw_icon(self, icon, position):
-        self.__screen_image.paste(icon, position)
-    def run(self):
-        while not self.__stop.is_set():
-            self.__refresh_screen()
-            self.__stop.wait(self.__refresh_interval)
-    def stop(self):
-        self.__stop.set()
