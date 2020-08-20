@@ -2,7 +2,7 @@
 from SensorUpdater import SensorUpdater
 from DBWriter import DBWriter
 from HapPublisher import HapPublisher
-from RadioApi import RadioApi
+from AudioController import AudioController
 import signal
 import logging, logging.handlers
 import sys
@@ -20,7 +20,7 @@ else:
     log_level = logging.WARNING
 
 formatter = logging.Formatter('%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
-handler = logging.handlers.RotatingFileHandler(filename=log_file, maxBytes=2*22, backupCount=2)
+handler = logging.handlers.RotatingFileHandler(filename=log_file, maxBytes=2**22, backupCount=2)
 handler.setFormatter(formatter)
 handler.setLevel(log_level)
 logging.getLogger().addHandler(handler)
@@ -32,7 +32,7 @@ def signal_handler(sig_num, stack_frame):
     if sig_num == signal.SIGINT or sig_num == signal.SIGTERM:
         updater.stop()
         writer.stop()
-        radio_api.stop()
+        audio_controller.stop()
         hap_publisher.stop()
 
 #register the signal handler for SIGINT and SIGTERM
@@ -43,15 +43,15 @@ signal.signal(signal.SIGTERM, signal_handler)
 updater = SensorUpdater(2)
 writer = DBWriter(db.table('influxdb-connection').get(doc_id=1), 5, updater.bme280)
 hap_publisher = HapPublisher(updater.bme280)
-radio_api = RadioApi(db.table('radio-stations'))
+audio_controller = AudioController(db.table('radio-stations'))
     
 #start threads
 updater.start()
 writer.start()
-radio_api.start()
+audio_controller.start()
 hap_publisher.start()
 
 #wait for threads to exit
 updater.join()
 writer.join()
-radio_api.join()
+audio_controller.join()

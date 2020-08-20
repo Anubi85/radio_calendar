@@ -5,3 +5,4 @@ HAP-python[QRCode]
 python-mpd2
 falcon
 tinydb
+inky

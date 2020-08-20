@@ -1,28 +1,13 @@
 import falcon
 import mpd
 import tinydb
+import json
 import wsgiref.simple_server
 import threading
-import json
 
-class RadioApi(threading.Thread):
+class AudioController(threading.Thread):
     def __init__(self, stations_db):
         super().__init__()
-        api = falcon.API()
-        self.__radio = Radio(stations_db)
-        api.add_route('/v1/radio/stations', self.__radio, suffix='stations')
-        api.add_route('/v1/radio/stations/{id:int}', self.__radio, suffix='stations_id')
-        api.add_route('/v1/radio/status', self.__radio, suffix='status')
-        self.__server = wsgiref.simple_server.make_server('0.0.0.0', 8585, api)
-
-    def run(self):
-        self.__server.serve_forever()
-
-    def stop(self):
-        self.__server.shutdown()
-
-class Radio():
-    def __init__(self, stations_db):
         self.__station_db = stations_db
         self.__current_station_id = None
         self.__mpc = mpd.MPDClient()
@@ -34,6 +19,18 @@ class Radio():
         #reset the station list on mpd
         self.__exec_mpd_command('stop')
         self.__exec_mpd_command('clear')
+        #initialize REST API
+        api = falcon.API()
+        api.add_route('/v1/radio/stations', self, suffix='stations')
+        api.add_route('/v1/radio/stations/{id:int}', self, suffix='stations_id')
+        api.add_route('/v1/radio/status', self, suffix='status')
+        self.__server = wsgiref.simple_server.make_server('0.0.0.0', 8585, api)
+
+    def run(self):
+        self.__server.serve_forever()
+    def stop(self):
+        self.__server.shutdown()
+
     def __exec_mpd_command(self, cmd, *args):
         self.__mpc.connect('/run/mpd/socket')
         res = getattr(self.__mpc, cmd)(*args)
@@ -45,19 +42,14 @@ class Radio():
         resp.body = json.dumps(stations)
     def on_post_stations(self, req, resp):
         data = json.loads(req.stream.read(req.content_length))
-        try:
-            station_info = RadioStationInfo(**data)
-        except:
-            resp.status = falcon.HTTP_400
-            return
-        #check if id and position are valid
+        #check if position is valid
         station = tinydb.Query()
-        if self.__station_db.count(station.position == station_info.position):
+        if self.__station_db.count(station.position == data['position']):
             resp.status = falcon.HTTP_400
             return
         #everithing ok, add data to DB
-        station_id = self.__station_db.insert(station_info.to_dict())
-        resp.body = json.dumps({station_id:station_info.to_dict()})
+        station_id = self.__station_db.insert(data)
+        resp.body = json.dumps({station_id:data})
     #/stations/id/
     def on_get_stations_id(self, req, resp, id):
         station_info = self.__station_db.get(doc_id=id)
