@@ -122,3 +122,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Visual studio Code
+.vscode/
+.DS_Store
+
+# Custom
+db_settings.json
