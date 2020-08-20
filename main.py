@@ -59,9 +59,9 @@ hap_publisher = HapPublisher(sensor_updater.bme280)
 api_manager = ApiManager(audio_controller)
     
 #start tasks
-hap_publisher.start()
+update_scheduler.start()
 api_manager.start()
-update_scheduler.start() #this call is blocking, must be last
+hap_publisher.start() #this call is blocking, must be last
 
 #wait for threads to exit
 api_manager.join()
