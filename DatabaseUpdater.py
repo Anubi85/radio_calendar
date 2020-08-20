@@ -4,7 +4,6 @@ import json
 
 class DatabaseUpdater:
     def __init__(self, connection_info, bme280):
-        super().__init__()
         self.__influx_db_client = influxdb2.InfluxDBClient(
             url=connection_info['url'],
             token=connection_info['token'],

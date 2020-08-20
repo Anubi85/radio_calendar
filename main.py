@@ -43,12 +43,12 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 #initialize audio controller
-audio_controller = AudioController(db.table('radio-stations'), db.table('alarms'))
+audio_controller = AudioController(db.table('radio-stations'))
 #initialize updaters
 sensor_updater = SensorUpdater()
 database_updater = DatabaseUpdater(db.table('influxdb-connection').get(doc_id=1), sensor_updater.bme280)
 weather_updater = WetherUpdater()
-display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater.bme280, weather_updater, audio_controller)
+display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater.bme280, weather_updater)
 #initialize other tasks
 update_scheduler = UpdateScheduler()
 update_scheduler.add_task(2, sensor_updater)

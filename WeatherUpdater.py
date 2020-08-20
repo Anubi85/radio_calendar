@@ -2,7 +2,6 @@ import time
 
 class WetherUpdater:
     def __init__(self):
-        super().__init__()
         self.sunset_time = time.localtime(0)
         self.sunrise_time = time.localtime(0)
         self.today_forecast = 800

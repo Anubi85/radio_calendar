@@ -5,7 +5,6 @@ import logging
 
 class SensorUpdater:
     def __init__(self):
-        super().__init__()
         self.__logger = logging.getLogger(self.__class__.__name__)
         self.__i2c_bus = smbus2.SMBus(1)
         self.__bme280 = bme280.BME280(i2c_dev=self.__i2c_bus)

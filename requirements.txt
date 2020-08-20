@@ -6,4 +6,5 @@ python-mpd2
 falcon
 tinydb
 pillow
-inky
+inky[rpi]
+pyowm

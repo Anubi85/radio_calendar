@@ -4,9 +4,8 @@ import tinydb
 import json
 
 class AudioController:
-    def __init__(self, stations_db, alarms_db):
+    def __init__(self, stations_db):
         self.__station_db = stations_db
-        self.__alarms_db = alarms_db
         self.__current_station_id = None
         self.__mpc = mpd.MPDClient()
         #must add the volume command since it is not implemented
@@ -160,7 +159,3 @@ class AudioController:
             self.__exec_mpd_command('setvol', max(0, min(val, 100)))
         else:
             resp.status = falcon.HTTP_400
-    @property
-    def is_alarm_set(self):
-        alarm = tinydb.Query()
-        return self.__alarms_db.count(alarm['is-active'] == True) != 0
