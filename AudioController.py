@@ -6,9 +6,10 @@ import wsgiref.simple_server
 import threading
 
 class AudioController(threading.Thread):
-    def __init__(self, stations_db):
+    def __init__(self, stations_db, alarms_db):
         super().__init__()
         self.__station_db = stations_db
+        self.__alarms_db = alarms_db
         self.__current_station_id = None
         self.__mpc = mpd.MPDClient()
         #must add the volume command since it is not implemented
@@ -173,3 +174,7 @@ class AudioController(threading.Thread):
             self.__exec_mpd_command('setvol', max(0, min(val, 100)))
         else:
             resp.status = falcon.HTTP_400
+    @property
+    def is_alarm_set(self):
+        alarm = tinydb.Query()
+        return self.__alarms_db.count(alarm['is-active'] == True) != 0
