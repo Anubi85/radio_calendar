@@ -49,7 +49,7 @@ audio_controller = AudioController(db.table('radio-stations'))
 #initialize updaters
 sensor_updater = SensorUpdater()
 database_updater = DatabaseUpdater(db.table('influxdb-connection').get(doc_id=1), sensor_updater.bme280)
-weather_updater = WetherUpdater()
+weather_updater = WetherUpdater(db.table('owm-info').get(doc_id=1))
 moon_updater = MoonUpdater()
 gpio_updater = GpioUpdater()
 display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater.bme280, weather_updater, moon_updater, gpio_updater)
@@ -60,7 +60,7 @@ update_scheduler.add_task(5, database_updater)
 update_scheduler.add_task(60 * 60 * 3, weather_updater) #3 hours
 update_scheduler.add_task(60 * 60 * 3, moon_updater) #3 hours
 update_scheduler.add_task(0.25, gpio_updater)
-update_scheduler.add_task(15 * 60, display_updater) #15 minutes
+update_scheduler.add_task(5 * 60, display_updater) #5 minutes
 hap_publisher = HapPublisher(sensor_updater.bme280)
 api_manager = ApiManager(audio_controller)
     

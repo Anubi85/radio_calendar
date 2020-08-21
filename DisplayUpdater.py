@@ -160,29 +160,29 @@ class DisplayUpdater:
     def __refresh_sun_times(self):
         res = False
         #sunrise
-        if self.__weather_info.sunrise_time.tm_hour != getattr(self.__old_sunrise_time, 'tm_hour', None):
+        if self.__weather_info.sunrise_time.hour != getattr(self.__old_sunrise_time, 'hour', None):
             #draw new hour value
-            h = DisplayUpdater.__get_digits(self.__weather_info.sunrise_time.tm_hour, 2, True)
+            h = DisplayUpdater.__get_digits(self.__weather_info.sunrise_time.hour, 2, True)
             self.__draw_digit(self.__digit_fonts['small'], (59,45), 8, h[0])
             self.__draw_digit(self.__digit_fonts['small'], (68,45), 8, h[1])
             res = True
-        if self.__weather_info.sunrise_time.tm_min != getattr(self.__old_sunrise_time, 'tm_min', None):
+        if self.__weather_info.sunrise_time.minute != getattr(self.__old_sunrise_time, 'minute', None):
             #draw new minute value
-            m = DisplayUpdater.__get_digits(self.__weather_info.sunrise_time.tm_min, 2, True)
+            m = DisplayUpdater.__get_digits(self.__weather_info.sunrise_time.minute, 2, True)
             self.__draw_digit(self.__digit_fonts['small'], (79,45), 8, m[0])
             self.__draw_digit(self.__digit_fonts['small'], (88,45), 8, m[1])
             res = True
         self.__old_sunrise_time = self.__weather_info.sunrise_time
         #sunset
-        if self.__weather_info.sunset_time.tm_hour != getattr(self.__old_sunset_time, 'tm_hour', None):
+        if self.__weather_info.sunset_time.hour != getattr(self.__old_sunset_time, 'hour', None):
             #draw new hour value
-            h = DisplayUpdater.__get_digits(self.__weather_info.sunset_time.tm_hour, 2, True)
+            h = DisplayUpdater.__get_digits(self.__weather_info.sunset_time.hour, 2, True)
             self.__draw_digit(self.__digit_fonts['small'], (59,62), 8, h[0])
             self.__draw_digit(self.__digit_fonts['small'], (68,62), 8, h[1])
             res = True
-        if self.__weather_info.sunset_time.tm_min != getattr(self.__old_time_date, 'tm_min', None):
+        if self.__weather_info.sunset_time.minute != getattr(self.__old_sunset_time, 'minute', None):
             #draw new minute value
-            m = DisplayUpdater.__get_digits(self.__weather_info.sunset_time.tm_min, 2, True)
+            m = DisplayUpdater.__get_digits(self.__weather_info.sunset_time.minute, 2, True)
             self.__draw_digit(self.__digit_fonts['small'], (79,62), 8, m[0])
             self.__draw_digit(self.__digit_fonts['small'], (88,62), 8, m[1])
             res = True
