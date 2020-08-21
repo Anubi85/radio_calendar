@@ -8,3 +8,4 @@ tinydb
 pillow
 inky[rpi]
 pyowm
+pyephem
