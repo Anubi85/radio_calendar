@@ -9,3 +9,4 @@ pillow
 inky[rpi]
 pyowm
 pyephem
+gpiozero
