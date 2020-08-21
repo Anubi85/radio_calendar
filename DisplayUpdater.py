@@ -1,5 +1,5 @@
-#from inky import InkyPHAT
-from inky import InkyMockPHAT as InkyPHAT
+from inky import InkyPHAT
+#from inky import InkyMockPHAT as InkyPHAT
 from PIL import Image
 import time
 import os
