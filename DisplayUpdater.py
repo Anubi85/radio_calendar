@@ -76,6 +76,7 @@ class DisplayUpdater:
         self.__old_is_daytime = None
         self.__old_next_moon_phase = None
         self.__old_next_moon_phase_date = None
+        self.__old_uv_index = None
 
     @staticmethod
     def __get_digits(value, length, is_integer):
@@ -215,15 +216,25 @@ class DisplayUpdater:
     def __refresh_moon_phase(self):
         res = False
         if self.__moon_info.next_moon_phase != self.__old_next_moon_phase:
-            self.__draw_icon(self.__moon_icons[self.__moon_info.next_moon_phase]['draw'], (17,83))
+            self.__draw_icon(self.__moon_icons[self.__moon_info.next_moon_phase]['draw'], (38,83))
             res = True
         self.__old_next_moon_phase = self.__moon_info.next_moon_phase
         if self.__moon_info.next_moon_phase_date != self.__old_next_moon_phase_date:
             d = self.__get_digits(self.__moon_info.next_moon_phase_date.day, 2, True)
-            self.__draw_digit(self.__digit_fonts['small'], (42,86), 8, d[0])
-            self.__draw_digit(self.__digit_fonts['small'], (51,86), 8, d[1])
-            self.__draw_label(self.__labels['month'], (64,86), self.__moon_info.next_moon_phase_date.month)
+            self.__draw_digit(self.__digit_fonts['small'], (60,86), 8, d[0])
+            self.__draw_digit(self.__digit_fonts['small'], (69,86), 8, d[1])
+            self.__draw_label(self.__labels['month'], (79,86), self.__moon_info.next_moon_phase_date.month)
+            res = True
         self.__old_next_moon_phase_date = self.__moon_info.next_moon_phase_date
+        return res
+    def __refresh_uv_index(self):
+        res = False
+        if self.__weather_info.uv_index != self.__old_uv_index:
+            idx = self.__get_digits(int(self.__weather_info.uv_index), 2, True)
+            self.__draw_digit(self.__digit_fonts['small'], (18,86), 8, idx[0])
+            self.__draw_digit(self.__digit_fonts['small'], (27,86), 8, idx[1])
+            res = True
+        self.__old_uv_index = self.__weather_info.uv_index
         return res
     def __refresh_power_icon(self):
         self.__draw_icon(self.__power_icons[self.__gpio.power_status]['draw'], (2,8))
@@ -246,6 +257,7 @@ class DisplayUpdater:
         refresh_needed |= self.__refresh_sun_times()
         refresh_needed |= self.__refresh_weather_icons()
         refresh_needed |= self.__refresh_moon_phase()
+        refresh_needed |= self.__refresh_uv_index()
         if refresh_needed:
             self.__display.set_image(self.__screen_image)
             self.__display.show()
