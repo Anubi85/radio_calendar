@@ -238,6 +238,7 @@ class DisplayUpdater:
         return res
     def __refresh_power_icon(self):
         self.__draw_icon(self.__power_icons[self.__gpio.power_status]['draw'], (2,8))
+        self.__refresh_display()
     def __draw_digit(self, font, position, clean_value, value):
         self.__screen_image.paste(font['clear'], position, font[clean_value])
         if value != None:
@@ -248,6 +249,9 @@ class DisplayUpdater:
             self.__screen_image.paste(font['draw'], position, font[value])
     def __draw_icon(self, icon, position):
         self.__screen_image.paste(icon, position)
+    def __refresh_display(self):
+        self.__display.set_image(self.__screen_image)
+        self.__display.show()
     def update(self):
         refresh_needed = False
         refresh_needed |= self.__refresh_temperature()
@@ -259,5 +263,4 @@ class DisplayUpdater:
         refresh_needed |= self.__refresh_moon_phase()
         refresh_needed |= self.__refresh_uv_index()
         if refresh_needed:
-            self.__display.set_image(self.__screen_image)
-            self.__display.show()
+            self.__refresh_display()
