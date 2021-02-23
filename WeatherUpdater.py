@@ -2,7 +2,7 @@ import pyowm
 import datetime
 import logging
 
-class WetherUpdater:
+class WeatherUpdater:
     def __init__(self, owm_info):
         self.__logger = logging.getLogger(self.__class__.__name__)
         self.__owm = pyowm.OWM(owm_info['api-key'])
@@ -17,7 +17,7 @@ class WetherUpdater:
         try:
             weather_data = self.__owm.weather_manager().one_call(
                 lat=self.__owm_location.lat, lon=self.__owm_location.lon)
-            self.uv_index = weather_data.current.uvi
+            self.uv_index = int(weather_data.current.uvi)
             self.today_forecast = weather_data.current.weather_code
             self.sunrise_time = weather_data.current.sunrise_time('date').astimezone()
             self.sunset_time = weather_data.current.sunset_time('date').astimezone()
@@ -27,4 +27,4 @@ class WetherUpdater:
             self.__logger.error(ex)
     @property
     def is_daytime(self):
-        return self.sunrise_time < datetime.datetime.now(datetime.timezone.utc) < self.sunset_time
+        return self.sunrise_time < datetime.datetime.now(self.sunrise_time.tzinfo) < self.sunset_time

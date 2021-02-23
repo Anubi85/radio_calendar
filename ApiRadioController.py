@@ -3,16 +3,11 @@ import mpd
 import tinydb
 import json
 
-class AudioController:
+class ApiRadioController:
     def __init__(self, stations_db):
         self.__station_db = stations_db
         self.__current_station_id = None
         self.__mpc = mpd.MPDClient()
-        #must add the volume command since it is not implemented
-        def volume_callback(client, value):
-            #we do not expect any results
-            pass
-        self.__mpc.add_command('volume', volume_callback)
         #reset the station list on mpd
         self.__exec_mpd_command('stop')
         self.__exec_mpd_command('clear')
@@ -83,6 +78,8 @@ class AudioController:
         else:
             state['current-station'] = None
         resp.body = json.dumps(state)
+    #/control/
+    #TODO: implement control endpoint
     def on_put_status(self, req, resp):
         data = json.loads(req.stream.read(req.content_length))
         target = data.get('target', None)
