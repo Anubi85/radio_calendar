@@ -8,8 +8,11 @@ class ApiManager(threading.Thread):
         #initialize REST API
         api = falcon.API()
         api.add_route('/v1/radio/stations', audio_controller, suffix='stations')
-        api.add_route('/v1/radio/stations/{id:int}', audio_controller, suffix='stations_id')
-        api.add_route('/v1/radio/status', audio_controller, suffix='status')
+        api.add_route('/v1/radio/stations/{pos:int}', audio_controller, suffix='stations_pos')
+        api.add_route('/v1/radio/state', audio_controller, suffix='state')
+        api.add_route('/v1/radio/control/state/{cmd}', audio_controller, suffix='control_state')
+        api.add_route('/v1/radio/control/station/{cmd}', audio_controller, suffix='control_station')
+        api.add_route('/v1/radio/control/volume/{cmd}', audio_controller, suffix='control_volume')
         self.__server = wsgiref.simple_server.make_server('0.0.0.0', 8585, api)
     def run(self):
         self.__server.serve_forever()
