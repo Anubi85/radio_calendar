@@ -3,6 +3,9 @@ from PIL import Image
 from Enums import Input
 import time
 import os
+import logging
+
+#TODO: loggare
 
 class Font:
     def __init__(self, masks_path):
@@ -33,10 +36,10 @@ class Icon:
             return None
 
 class DisplayUpdater:
-    def __init__(self, display_resources, bme280, weather_info, moon_info, gpio):
-        super().__init__()
+    def __init__(self, display_resources, sensors, weather_info, moon_info, gpio):
+        self.__logger = logging.getLogger(self.__class__.__name__)
         self.__resources = display_resources
-        self.__bme280 = bme280
+        self.__sensors = sensors
         self.__weather_info = weather_info
         self.__moon_info = moon_info
         self.__gpio = gpio
@@ -93,7 +96,7 @@ class DisplayUpdater:
         return res[:length]
     def __refresh_temperature(self):
         res = False
-        tmp = round(self.__bme280.temperature, 1)
+        tmp = round(self.__sensors.bme280_temperature, 1)
         if tmp != self.__old_temperature:
             #draw new value
             digits = DisplayUpdater.__get_digits(tmp, 3, False)
@@ -105,7 +108,7 @@ class DisplayUpdater:
         return res
     def __refresh_humidity(self):
         res = False
-        tmp = round(self.__bme280.humidity, 1)
+        tmp = round(self.__sensors.bme280_humidity, 1)
         if tmp != self.__old_humidity:
             #draw new value
             digits = DisplayUpdater.__get_digits(tmp, 4, False)
@@ -118,7 +121,7 @@ class DisplayUpdater:
         return res
     def __refresh_pressure(self):
         res = False
-        tmp = round(self.__bme280.pressure, 1)
+        tmp = round(self.__sensors.bme280_pressure, 1)
         if tmp != self.__old_pressure:
             #draw new value
             digits = DisplayUpdater.__get_digits(tmp, 5, False)

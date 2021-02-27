@@ -21,10 +21,6 @@ class SensorUpdater:
             #some error occured, log the exception and keep trying
             self.__logger.error('Sensor update fail with error {0}'.format(ex))
     @property
-    def bme280(self):
-        #TODO: Rimuovere
-        return self.__bme280
-    @property
     def bme280_temperature(self):
         #TODO: implementare compensazione
         return self.__bme280.temperature
