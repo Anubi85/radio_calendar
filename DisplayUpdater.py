@@ -1,9 +1,8 @@
 from inky import InkyPHAT
-#from inky import InkyMockPHAT as InkyPHAT
 from PIL import Image
+from Enums import Input
 import time
 import os
-import re
 
 class Font:
     def __init__(self, masks_path):
@@ -41,7 +40,7 @@ class DisplayUpdater:
         self.__weather_info = weather_info
         self.__moon_info = moon_info
         self.__gpio = gpio
-        self.__gpio.register_for_changes('power_status', self.__refresh_power_icon)
+        self.__gpio.register_for_changes(self.__refresh_power_icon)
         self.__display = InkyPHAT('yellow')
         self.__display.set_border(InkyPHAT.BLACK)
         self.__screen_image = Image.open(self.__resources['background'])
@@ -236,9 +235,14 @@ class DisplayUpdater:
             res = True
         self.__old_uv_index = self.__weather_info.uv_index
         return res
-    def __refresh_power_icon(self):
-        self.__draw_icon(self.__power_icons[self.__gpio.power_status]['draw'], (2,8))
-        self.__refresh_display()
+    def __refresh_power_icon(self, prop_name):
+        if prop_name == Input.PowerState:
+            try:
+                self.__draw_icon(self.__power_icons[self.__gpio.power_status]['draw'], (2,8))
+                self.__refresh_display()
+            except Exception as ex:
+                #TODO: loggare errore
+                pass
     def __draw_digit(self, font, position, clean_value, value):
         self.__screen_image.paste(font['clear'], position, font[clean_value])
         if value != None:
