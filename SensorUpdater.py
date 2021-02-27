@@ -15,10 +15,23 @@ class SensorUpdater:
         self.__bme280.update_sensor()
     def update(self):
         try:
+            self.__logger.debug('Updating BME280 sensor')
             self.__bme280.update_sensor()
         except Exception as ex:
             #some error occured, log the exception and keep trying
-            self.__logger.error(ex)
+            self.__logger.error('Sensor update fail with error {0}'.format(ex))
     @property
     def bme280(self):
+        #TODO: Rimuovere
         return self.__bme280
+    @property
+    def bme280_temperature(self):
+        #TODO: implementare compensazione
+        return self.__bme280.temperature
+    @property
+    def bme280_humidity(self):
+        #TODO: implementare compensazione
+        return self.__bme280.humidity
+    @property
+    def bme280_pressure(self):
+        return self.__bme280.pressure
