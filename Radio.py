@@ -3,6 +3,7 @@ import mpd
 import tinydb
 
 #TODO: implementare dummy per test
+#TODO: loggare
 
 class MpdStateTag(StrEnum):
     State = 'state'

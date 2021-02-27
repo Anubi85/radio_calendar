@@ -1,10 +1,12 @@
 import threading
 import falcon
 import wsgiref.simple_server
+import logging
 
 class ApiManager(threading.Thread):
     def __init__(self, audio_controller):
         super().__init__()
+        self.__logger = logging.getLogger(self.__class__.__name__)
         #initialize REST API
         api = falcon.API()
         api.add_route('/v1/radio/stations', audio_controller, suffix='stations')
@@ -15,6 +17,8 @@ class ApiManager(threading.Thread):
         api.add_route('/v1/radio/control/volume/{cmd}', audio_controller, suffix='control_volume')
         self.__server = wsgiref.simple_server.make_server('0.0.0.0', 8585, api)
     def run(self):
+        self.__logger.debug('Starting REST API server')
         self.__server.serve_forever()
     def stop(self):
         self.__server.shutdown()
+        self.__logger.debug('REST API server stopped')

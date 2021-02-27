@@ -2,6 +2,8 @@ from Enums import StationTag
 import falcon
 import json
 
+#TODO: loggare
+
 class RadioApiController:
     def __init__(self, radio):
         self.__radio = radio
