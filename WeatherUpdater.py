@@ -15,6 +15,7 @@ class WeatherUpdater:
         self.uv_index = None
     def update(self):
         try:
+            self.__logger.debug('Updating weather data')
             weather_data = self.__owm.weather_manager().one_call(
                 lat=self.__owm_location.lat, lon=self.__owm_location.lon)
             self.uv_index = int(weather_data.current.uvi)

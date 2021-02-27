@@ -15,7 +15,7 @@ class SensorUpdater:
         self.__bme280.update_sensor()
     def update(self):
         try:
-            self.__logger.debug('Updating BME280 sensor')
+            self.__logger.debug('Updating BME280 data')
             self.__bme280.update_sensor()
         except Exception as ex:
             #some error occured, log the exception and keep trying

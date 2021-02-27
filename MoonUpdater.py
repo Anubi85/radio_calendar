@@ -1,4 +1,5 @@
 import ephem
+import logging
 
 class MoonUpdater:
     NEW_MOON = 'new-moon'
@@ -6,6 +7,7 @@ class MoonUpdater:
     FULL_MOON = 'full-moon'
     LAST_QUARTER_MOON = 'last-quarter-mon'
     def __init__(self):
+        self.__logger = logging.getLogger(self.__class__.__name__)
         #find current moon phase
         now = ephem.now()
         new_date = ephem.next_new_moon(now)
@@ -26,6 +28,7 @@ class MoonUpdater:
             delta = last_quarter_date - now
             self.__current_phase = MoonUpdater.FULL_MOON
     def update(self):
+        self.__logger.debug('Updating moon phase data')
         if ephem.now().datetime() > self.next_moon_phase_date:
             self.__current_phase = self.next_moon_phase
     @property

@@ -80,7 +80,7 @@ update_scheduler.add_task(0.25, gpio_updater)
 update_scheduler.add_task(5 * 60, display_updater) #5 minutes
 main_logger.debug('Add tasks to task scheduler')
 #initialize homekit publisher
-hap_publisher = HapPublisher(sensor_updater.bme280)
+hap_publisher = HapPublisher(sensor_updater)
 main_logger.debug('Create {0} instance'.format(HapPublisher.__name__))
 #initialize REST API server
 api_manager = ApiManager(radio_api_controller)
