@@ -1,6 +1,6 @@
 from enum import Enum
 
-class StrEnum(Enum, str):
+class StrEnum(str, Enum):
     def __new__(cls, value):
         return str.__new__(cls, value)
 

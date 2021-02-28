@@ -4,8 +4,6 @@ import tinydb
 import logging
 import json
 
-#TODO: implementare dummy per test
-
 class MpdStateTag(StrEnum):
     State = 'state'
     Volume = 'volume'
@@ -91,7 +89,7 @@ class Radio:
     def change_volume(self, delta):
         self.__exec_func(self.__change_volume, delta)
     def set_volume(self, volume):
-        self.__exec_func(self.__set_volume)
+        self.__exec_func(self.__set_volume, volume)
     def get_state(self):
         mpc_state = self.__exec_func(self.__get_state)
         current_station = self.get_station(self.__current_pos)
@@ -99,11 +97,14 @@ class Radio:
         state['state'] = mpc_state[MpdStateTag.State]
         state['volume'] = mpc_state[MpdStateTag.Volume]
         station_info = {}
-        station_info['position'] = current_station[StationTag.Position]
-        station_info['name'] = current_station[StationTag.DisplayName]
-        station_info['url'] = current_station[StationTag.StreamUrl]
-        station_info['image'] = current_station[StationTag.Image]
-        station_info['title'] = mpc_state[MpdStateTag.Title]
+        if current_station:
+            station_info['position'] = current_station[StationTag.Position]
+            station_info['name'] = current_station[StationTag.DisplayName]
+            station_info['url'] = current_station[StationTag.StreamUrl]
+            station_info['image'] = current_station[StationTag.Image]
+            station_info['title'] = mpc_state.get(MpdStateTag.Title, None)
+        else:
+            self.__logger.debug('Not adding current station information because no current station is set')
         state['station'] = station_info
         return state
     def is_current(self, pos):
@@ -147,14 +148,14 @@ class Radio:
     def get_station(self, pos):
         self.__logger.debug('Retrieving information for station with position {0}'.format(pos))
         return self.__stations_db.get(tinydb.where(StationTag.Position)==pos)
-    def get_next_station(self, pos):
-        self.__logger.debug('Retrieving information for next station. Current position is {0}'.format(pos))
-        filter_func = lambda item: item[StationTag.Position] > pos
-        return self.__get_station_filtered(pos, 0, filter_func)
-    def get_prev_station(self, pos):
-        self.__logger.debug('Retrieving information for previous station. Current position is {0}'.format(pos))
-        filter_func = lambda item: item[StationTag.Position] < pos
-        return self.__get_station_filtered(pos, -1, filter_func)
+    def get_next_station(self):
+        self.__logger.debug('Retrieving information for next station. Current position is {0}'.format(self.__current_pos))
+        filter_func = lambda item: item[StationTag.Position] > self.__current_pos
+        return self.__get_station_filtered(self.__current_pos, 0, filter_func)
+    def get_prev_station(self):
+        self.__logger.debug('Retrieving information for previous station. Current position is {0}'.format(self.__current_pos))
+        filter_func = lambda item: item[StationTag.Position] < self.__current_pos
+        return self.__get_station_filtered(self.__current_pos, -1, filter_func)
     def add_station(self, data):
         self.__logger.debug('Adding new station {0}'.format(json.dumps(data)))
         id = self.__stations_db.insert(data)
@@ -163,7 +164,7 @@ class Radio:
         self.__logger.debug('Updating station {0} with {1}'.format(pos, json.dumps(data)))
         old_data = self.get_station(pos)
         id  = self.__stations_db.update(data, doc_ids=[old_data.doc_id])
-        return self.__stations_db.get(doc_id=id)
+        return old_data if id else None
     def delete_station(self, pos):
         self.__logger.debug('Deleting station with position {0}'.format(pos))
         old_data = self.get_station(pos)

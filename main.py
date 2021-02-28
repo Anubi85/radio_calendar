@@ -87,10 +87,10 @@ try:
     #initialize REST API server
     api_manager = ApiManager(radio_api_controller)
     main_logger.debug('Create {0} instance'.format(ApiManager.__name__))
-    main_logger.debug('Components initialized')
+    main_logger.info('Components initialized')
 except Exception as ex:
     main_logger.critical('Components initialization failed with error {0}'.format(ex))
-    return
+    exit(1)
     
 #start tasks
 try:

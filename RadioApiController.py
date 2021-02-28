@@ -32,13 +32,13 @@ class RadioApiController:
         for tag in StationTag:
             if not (tag in data):
                 res = False
-                self.__logger.error('Tag {0} not found')
+                self.__logger.error('Tag {0} not found'.format(tag))
         return data if res else None
     
 #/stations
     def on_get_stations(self, req, resp):
         self.__logger.debug('GET request on /stations endpoint received')
-        stations = self.__radio.on_get_stations()
+        stations = self.__radio.get_stations()
         resp.body = json.dumps(stations)
     def on_post_stations(self, req, resp):
         self.__logger.debug('POST request on /stations endpoint received')
@@ -75,7 +75,7 @@ class RadioApiController:
             if self.__radio.position_exists(pos):
                 #check if new position exists
                 new_pos = data[StationTag.Position]
-                if (pos != new_pos) and (not self.__radio.position_exists(new_pos)):
+                if pos == new_pos:
                     old_data = self.__radio.update_station(pos, data)
                     resp.body = json.dumps({'old':old_data,'new':data})
                     self.__logger.debug('station {0} updated with new data {1}'.format(pos, resp.body))
@@ -88,7 +88,7 @@ class RadioApiController:
                         self.__radio.stop()
                         self.__radio.play()
                 else:
-                    resp.body = self.__error('new position {0} already exists'.format(new_pos))
+                    resp.body = self.__error('position cannot be changed')
                     resp.status = falcon.HTTP_400
             else:
                 resp.body = self.__error('position {0} not found'.format(pos))
@@ -96,7 +96,7 @@ class RadioApiController:
         else:
             resp.body = self.__error('malformed request content')
             resp.status = falcon.HTTP_400
-    def on_del_stations_pos(self, req, resp, pos):
+    def on_delete_stations_pos(self, req, resp, pos):
         self.__logger.debug('DEL request on /stations/{pos:int} endpoint received')
         if self.__radio.position_exists(pos):
             deleted = self.__radio.delete_station(pos)
@@ -152,7 +152,7 @@ class RadioApiController:
         if cmd == 'set' and pos:
             new_station = self.__radio.get_station(pos)
             if new_station:
-                self.__radio.set_current(new_station)
+                self.__radio.set_current(pos)
                 if self.__radio.is_playing():
                     self.__logger.debug('Restarting mpd due to current station update')
                     self.__radio.stop()
@@ -186,7 +186,7 @@ class RadioApiController:
                 resp.body = self.__error('command {0} not supported'.format(cmd))
         else:
             resp.body = self.__error('expected an integer for {0} parameter'.format(PARAM_NAME))
-            resp.state = falcon.HTTP_400
+            resp.status = falcon.HTTP_400
     def on_put_control_volume(self, req, resp, cmd):
         self.__logger.debug('PUT request on /control/volume/{0} endpoint received'.format(cmd))
         PARAM_NAME = 'value'
@@ -200,4 +200,4 @@ class RadioApiController:
                 resp.body = self.__error('expected an integer for {0} parameter'.format(PARAM_NAME))
             else:
                 resp.body = self.__error('{0} parameter is missing'.format(PARAM_NAME))
-            resp.state == falcon.HTTP_400
+            resp.status == falcon.HTTP_400
