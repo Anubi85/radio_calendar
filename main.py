@@ -24,7 +24,7 @@ db_file = os.path.join(os.path.dirname(sys.argv[0]), 'db.json')
 if '-d' in sys.argv:
     log_level = logging.DEBUG
 else:
-    log_level = logging.INFO
+    log_level = logging.WARNING
 
 formatter = logging.Formatter('%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
 handler = logging.handlers.RotatingFileHandler(filename=log_file, maxBytes=2**22, backupCount=2)
