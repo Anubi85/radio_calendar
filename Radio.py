@@ -16,7 +16,7 @@ class MpdCommand(StrEnum):
     AddUrl = 'add'
     ChangeVolume = 'volume'
     SetVolume = 'setvol'
-    GetState = 'state'
+    GetState = 'status'
     GetSongInfo = 'playlistid'
 
 class Radio:
