@@ -23,11 +23,12 @@ class HapBME280(hap_accessory.Accessory):
             self.__humidity_characteristic.set_value(self.__sensor.bme280_humidity)
         except Exception as ex:
             self.__logger.error('Fail to update BME280 data with error {0}'.format(ex))
+            self.__logger.exception(ex)
 
 class HapPublisher(hap_accessory_driver.AccessoryDriver):
     def __init__(self, sensor):
         super().__init__()
-        self.__logger = logging.getLogger(self.__class__.__class__)
+        self.__logger = logging.getLogger(self.__class__.__name__)
         bridge = hap_accessory.Bridge(self, 'RadioAlarmClock')
         bridge.set_info_service(firmware_revision='1.0.0', manufacturer='Anubi', model='rpi-zw', serial_number=self.__get_pi_serial())
         bridge.add_accessory(HapBME280(self, sensor))
@@ -42,12 +43,13 @@ class HapPublisher(hap_accessory_driver.AccessoryDriver):
                     cpuserial = line[10:26]
         except Exception as ex:
             self.__logger.error('Fail to retrieve CPU serial number with error {0}'.format(ex))
+            self.__logger.exception(ex)
             cpuserial = "ERROR000000000"
         return cpuserial
 
     def start(self):
-        self.__logger('Start serving Apple HomeKit requests')
+        self.__logger.debug('Start serving Apple HomeKit requests')
         super().start()
     def stop(self):
         super().stop()
-        self.__logger('Stop serving Apple HomeKit requests')
+        self.__logger.debug('Stop serving Apple HomeKit requests')

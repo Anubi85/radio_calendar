@@ -26,6 +26,7 @@ class WeatherUpdater:
         except Exception as ex:
             #some error occured, log the exception and keep trying
             self.__logger.error('Fail to update weather data with error {0}'.format(ex))
+            self.__logger.exception(ex)
     @property
     def is_daytime(self):
         return self.sunrise_time < datetime.datetime.now(self.sunrise_time.tzinfo) < self.sunset_time

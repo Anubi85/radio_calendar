@@ -29,8 +29,8 @@ else:
 formatter = logging.Formatter('%(asctime)s %(name)-16s %(levelname)-8s %(message)s')
 handler = logging.handlers.RotatingFileHandler(filename=log_file, maxBytes=2**22, backupCount=2)
 handler.setFormatter(formatter)
-handler.setLevel(log_level)
 main_logger = logging.getLogger()
+main_logger.setLevel(log_level)
 main_logger.addHandler(handler)
 
 db = tinydb.TinyDB(db_file, indent=4)
@@ -90,6 +90,7 @@ try:
     main_logger.info('Components initialized')
 except Exception as ex:
     main_logger.critical('Components initialization failed with error {0}'.format(ex))
+    main_logger.exception(ex)
     exit(1)
     
 #start tasks
@@ -103,3 +104,4 @@ try:
     main_logger.info('Exit completed')
 except Exception as ex:
     main_logger.critical('Unespected error {0}'.format(ex))
+    main_logger.exception(ex)

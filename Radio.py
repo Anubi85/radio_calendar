@@ -36,6 +36,7 @@ class Radio:
             return func(*func_args)
         except Exception as ex:
             self.__logger.error('Fail to execute mpd command with error {0}'.format(ex))
+            self.__logger.exception(ex)
             return None
         finally:
             self.__mpd_client.disconnect()

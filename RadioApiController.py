@@ -21,6 +21,7 @@ class RadioApiController:
                 par = int(par)
             except:
                 self.__logger.error('Parameter {0} is not an integer (value={1})'.format(par_name, par))
+                self.__logger.exception(ex)
                 par = None
         self.__logger.error('Parameter {0} not found'.format(par_name))
         return par

@@ -19,6 +19,7 @@ class UpdateScheduler:
             task_obj.update()
         except Exception as ex:
             self.__logger.error('Fail to update {0} with error {1}'.format(type(task_obj).__name__, ex))
+            self.__logger.exception(ex)
     def start(self):
         self.__worker.start()
         self.__logger.debug('{0} started'.format(UpdateScheduler.__name__))

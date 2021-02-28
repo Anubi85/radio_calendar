@@ -20,6 +20,7 @@ class SensorUpdater:
         except Exception as ex:
             #some error occured, log the exception and keep trying
             self.__logger.error('Sensor update fail with error {0}'.format(ex))
+            self.__logger.exception(ex)
     @property
     def bme280_temperature(self):
         #TODO: implementare compensazione

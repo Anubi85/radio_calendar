@@ -5,7 +5,7 @@ class MoonUpdater:
     NEW_MOON = 'new-moon'
     FIRST_QUARTER_MOON = 'first-quarter-moon'
     FULL_MOON = 'full-moon'
-    LAST_QUARTER_MOON = 'last-quarter-mon'
+    LAST_QUARTER_MOON = 'last-quarter-moon'
     def __init__(self):
         self.__logger = logging.getLogger(self.__class__.__name__)
         #find current moon phase

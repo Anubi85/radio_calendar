@@ -257,6 +257,7 @@ class DisplayUpdater:
                 self.__logger.debug('Image update triggered by power state change')
             except Exception as ex:
                 self.__logger.error('Fail to update image due to a power state change with error {0}'.format(ex))
+                self.__logger.exception(ex)
                 pass
     def __draw_digit(self, font, position, clean_value, value):
         try:
@@ -265,6 +266,7 @@ class DisplayUpdater:
                 self.__screen_image.paste(font['draw'], position, font[value])
         except Exception as ex:
             self.__logger.error('Fail to draw digit with error {0}'.format(ex))
+            self.__logger.exception(ex)
     def __draw_label(self, font, position, value):
         try:
             self.__screen_image.paste(font['clear'], position)
@@ -272,17 +274,20 @@ class DisplayUpdater:
                 self.__screen_image.paste(font['draw'], position, font[value])
         except Exception as ex:
             self.__logger.error('Fail to draw label with error {0}'.format(ex))
+            self.__logger.exception(ex)
     def __draw_icon(self, icon, position):
         try: 
             self.__screen_image.paste(icon, position)
         except Exception as ex:
             self.__logger.error('Fail to draw icon with error {0}'.format(ex))
+            self.__logger.exception(ex)
     def __refresh_display(self):
         try:
             self.__display.set_image(self.__screen_image)
             self.__display.show()
         except Exception as ex:
             self.__logger.error('Fail to refresh display with error {0}'.format(ex))
+            self.__logger.exception(ex)
     def update(self):
         self.__logger.debug('Check for display image update')
         refresh_needed = False
