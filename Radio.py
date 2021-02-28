@@ -1,9 +1,10 @@
 from Enums import StationTag, StrEnum
 import mpd
 import tinydb
+import logging
+import json
 
 #TODO: implementare dummy per test
-#TODO: loggare
 
 class MpdStateTag(StrEnum):
     State = 'state'
@@ -15,25 +16,28 @@ class MpdCommand(StrEnum):
     Stop = 'stop'
     ClearUrl = 'clear'
     AddUrl = 'add'
-    Volume = 'volume'
+    ChangeVolume = 'volume'
     SetVolume = 'setvol'
     GetState = 'state'
     GetSongInfo = 'playlistid'
 
 class Radio:
     def __init__(self, stations_db):
+        self.__logger = logging.getLogger(self.__class__.__name__)
         self.__mpd_client = mpd.MPDClient()
         self.__stations_db = stations_db
         self.__current_pos = None
 
 #mpc private methods
     def __exec_mpd_command(self, cmd, *cmd_args):
+        self.__logger.debug('Executing mpd.{0}'.format(cmd))
         return getattr(self.__mpd_client, cmd)(*cmd_args)
     def __exec_func(self, func, *func_args):
         try:
             self.__mpd_client.connect('/run/mpd/socket')
             return func(*func_args)
-        except:
+        except Exception as ex:
+            self.__logger.error('Fail to execute mpd command with error {0}'.format(ex))
             return None
         finally:
             self.__mpd_client.disconnect()
@@ -41,20 +45,25 @@ class Radio:
     def __limit_value(value, min_value, max_value):
         return max(min_value, min(max_value, value))
     def __play(self, url):
+        self.__logger.debug('Start playing {0}'.format(url))
         self.__exec_mpd_command(MpdCommand.Stop)
         self.__exec_mpd_command(MpdCommand.ClearUrl)
         self.__exec_mpd_command(MpdCommand.AddUrl, url)
         self.__exec_mpd_command(MpdCommand.Play)
     def __stop(self):
+        self.__logger.debug('Stop playing')
         self.__exec_mpd_command(MpdCommand.Stop)
         self.__exec_mpd_command(MpdCommand.ClearUrl)
     def __change_volume(self, delta):
         delta = Radio.__limit_value(delta, -100, 100)
-        self.__exec_mpd_command(MpdCommand.AddUrl, delta)
+        self.__logger.debug('Changing volume by {0}'.format(delta))
+        self.__exec_mpd_command(MpdCommand.ChangeVolume, delta)
     def __set_volume(self, volume):
         volume = Radio.__limit_value(volume, 0, 100)
+        self.__logger.debug('Set volume to {0}'.format(volume))
         self.__exec_mpd_command(MpdCommand.SetVolume, volume)
     def __get_state(self):
+        self.__logger.debug('Retrieving mpd state')
         state = {}
         mpd_state = self.__exec_mpd_command(MpdCommand.GetState)
         state[MpdStateTag.State] = mpd_state.get('state', 'unknown')
@@ -75,6 +84,8 @@ class Radio:
         url = self.__get_current_station_url()
         if url:
             self.__exec_func(self.__play, url)
+        else:
+            self.__logger.warning('Not executing play because no url is avaialble')
     def stop(self):
         self.__exec_func(self.__stop)
     def change_volume(self, delta):
@@ -98,6 +109,7 @@ class Radio:
     def is_current(self, pos):
         return self.__current_pos == pos
     def set_current(self, pos):
+        self.__logger.debug('Setting current station to {0}'.format(pos))
         self.__current_pos = pos
     def is_playing(self):
         return self.__exec_func(self.__is_playing)
@@ -119,6 +131,10 @@ class Radio:
             current_station = self.__stations_db.get(tinydb.where(StationTag.Position)==self.__current_pos)
             if current_station:
                 return current_station[StationTag.StreamUrl]
+            else:
+                self.__logger.error('Station with position {0} not present in database'.format(self.__current_pos))
+        else:
+            self.__logger.warning('Current station not set')
         return None
 
 #station database public methods
@@ -129,21 +145,27 @@ class Radio:
         stations.sort(key=lambda item: item[StationTag.Position])
         return stations
     def get_station(self, pos):
+        self.__logger.debug('Retrieving information for station with position {0}'.format(pos))
         return self.__stations_db.get(tinydb.where(StationTag.Position)==pos)
     def get_next_station(self, pos):
+        self.__logger.debug('Retrieving information for next station. Current position is {0}'.format(pos))
         filter_func = lambda item: item[StationTag.Position] > pos
         return self.__get_station_filtered(pos, 0, filter_func)
     def get_prev_station(self, pos):
+        self.__logger.debug('Retrieving information for previous station. Current position is {0}'.format(pos))
         filter_func = lambda item: item[StationTag.Position] < pos
         return self.__get_station_filtered(pos, -1, filter_func)
     def add_station(self, data):
+        self.__logger.debug('Adding new station {0}'.format(json.dumps(data)))
         id = self.__stations_db.insert(data)
         return self.__stations_db.get(doc_id=id)
     def update_station(self, pos, data):
+        self.__logger.debug('Updating station {0} with {1}'.format(pos, json.dumps(data)))
         old_data = self.get_station(pos)
         id  = self.__stations_db.update(data, doc_ids=[old_data.doc_id])
         return self.__stations_db.get(doc_id=id)
     def delete_station(self, pos):
+        self.__logger.debug('Deleting station with position {0}'.format(pos))
         old_data = self.get_station(pos)
         self.__stations_db.remove(doc_ids=[old_data.doc_id])
         return old_data

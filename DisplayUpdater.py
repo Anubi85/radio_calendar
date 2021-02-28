@@ -5,8 +5,6 @@ import time
 import os
 import logging
 
-#TODO: loggare
-
 class Font:
     def __init__(self, masks_path):
         self.__masks = {int(''.join([c for c in f if c.isdigit()])):Image.open(masks_path + '/' + f) for f in os.listdir(masks_path) if f.endswith('.png')}
@@ -104,6 +102,7 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['large'], (180, 2), 8, digits[1])
             self.__draw_digit(self.__digit_fonts['small'], (199,18), 8, digits[2])
             res = True
+            self.__logger.debug('Image update triggered by temperature change')
         self.__old_temperature = tmp
         return res
     def __refresh_humidity(self):
@@ -117,6 +116,7 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['large'], (180,37), 8, digits[2])
             self.__draw_digit(self.__digit_fonts['small'], (199,53), 8, digits[3])
             res = True
+            self.__logger.debug('Image update triggered by humidity change')
         self.__old_humidity = tmp
         return res
     def __refresh_pressure(self):
@@ -131,6 +131,7 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['large'], (180,72), 8, digits[3])
             self.__draw_digit(self.__digit_fonts['small'], (199,88), 8, digits[4])
             res = True
+            self.__logger.debug('Image update triggered by pressure change')
         self.__old_pressure = tmp
         return res
     def __refresh_date(self):
@@ -144,20 +145,21 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['small'], (123,18), 8, y[2])
             self.__draw_digit(self.__digit_fonts['small'], (132,18), 8, y[3])
             res = True
+            self.__logger.debug('Image update triggered by year change')
         if tmp.tm_mon != getattr(self.__old_date, 'tm_mon', None):
             #draw new mounth value
             self.__draw_label(self.__labels['month'], (78, 2), tmp.tm_mon)
             res = True
+            self.__logger.debug('Image update triggered by month change')
         if tmp.tm_mday != getattr(self.__old_date, 'tm_mday', None):
             #draw new day value
             d = DisplayUpdater.__get_digits(tmp.tm_mday, 2, True)
             self.__draw_digit(self.__digit_fonts['large'], (45,2), 8, d[0])
             self.__draw_digit(self.__digit_fonts['large'], (61,2), 8, d[1])
-            res = True
-        if tmp.tm_wday != getattr(self.__old_date, 'tm_wday', None):
             #draw new week day value
             self.__draw_label(self.__labels['week'], (78, 21), tmp.tm_wday + 1)
             res = True
+            self.__logger.debug('Image update triggered by day change')
         self.__old_time_date = tmp
         return res
     def __refresh_sun_times(self):
@@ -169,12 +171,14 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['small'], (59,45), 8, h[0])
             self.__draw_digit(self.__digit_fonts['small'], (68,45), 8, h[1])
             res = True
+            self.__logger.debug('Image update triggered by sunrise hour change')
         if self.__weather_info.sunrise_time.minute != getattr(self.__old_sunrise_time, 'minute', None):
             #draw new minute value
             m = DisplayUpdater.__get_digits(self.__weather_info.sunrise_time.minute, 2, True)
             self.__draw_digit(self.__digit_fonts['small'], (79,45), 8, m[0])
             self.__draw_digit(self.__digit_fonts['small'], (88,45), 8, m[1])
             res = True
+            self.__logger.debug('Image update triggered by sunrise minute change')
         self.__old_sunrise_time = self.__weather_info.sunrise_time
         #sunset
         if self.__weather_info.sunset_time.hour != getattr(self.__old_sunset_time, 'hour', None):
@@ -183,12 +187,14 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['small'], (59,62), 8, h[0])
             self.__draw_digit(self.__digit_fonts['small'], (68,62), 8, h[1])
             res = True
+            self.__logger.debug('Image update triggered by sunset hour change')
         if self.__weather_info.sunset_time.minute != getattr(self.__old_sunset_time, 'minute', None):
             #draw new minute value
             m = DisplayUpdater.__get_digits(self.__weather_info.sunset_time.minute, 2, True)
             self.__draw_digit(self.__digit_fonts['small'], (79,62), 8, m[0])
             self.__draw_digit(self.__digit_fonts['small'], (88,62), 8, m[1])
             res = True
+            self.__logger.debug('Image update triggered by sunset minute change')
         self.__old_sunset_time = self.__weather_info.sunset_time
         return res
     def __refresh_weather_icons(self):
@@ -202,6 +208,7 @@ class DisplayUpdater:
             else:
                 self.__draw_icon(self.__weather_icons_night[self.__weather_info.today_forecast]['draw'], (6,47))
             res = True
+            self.__logger.debug('Image update triggered by today forecast change')
         self.__old_today_forecast = self.__weather_info.today_forecast
         #tomorrow forecast
         if self.__weather_info.tomorrow_forecast != self.__old_tomorrow_forecast or \
@@ -212,6 +219,7 @@ class DisplayUpdater:
             else:
                 self.__draw_icon(self.__weather_icons_night[self.__weather_info.tomorrow_forecast]['draw'], (106,47))
             res = True
+            self.__logger.debug('Image update triggered by tomorrow forecast change')
         self.__old_tomorrow_forecast = self.__weather_info.tomorrow_forecast
         self.__old_is_daytime = self.__weather_info.is_daytime
         return res
@@ -220,6 +228,7 @@ class DisplayUpdater:
         if self.__moon_info.next_moon_phase != self.__old_next_moon_phase:
             self.__draw_icon(self.__moon_icons[self.__moon_info.next_moon_phase]['draw'], (38,83))
             res = True
+            self.__logger.debug('Image update triggered by moon phase change')
         self.__old_next_moon_phase = self.__moon_info.next_moon_phase
         if self.__moon_info.next_moon_phase_date != self.__old_next_moon_phase_date:
             d = self.__get_digits(self.__moon_info.next_moon_phase_date.day, 2, True)
@@ -227,6 +236,7 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['small'], (69,86), 8, d[1])
             self.__draw_label(self.__labels['month'], (79,86), self.__moon_info.next_moon_phase_date.month)
             res = True
+            self.__logger.debug('Image update triggered by moon phase date change')
         self.__old_next_moon_phase_date = self.__moon_info.next_moon_phase_date
         return res
     def __refresh_uv_index(self):
@@ -236,6 +246,7 @@ class DisplayUpdater:
             self.__draw_digit(self.__digit_fonts['small'], (18,86), 8, idx[0])
             self.__draw_digit(self.__digit_fonts['small'], (27,86), 8, idx[1])
             res = True
+            self.__logger.debug('Image update triggered by uv index change')
         self.__old_uv_index = self.__weather_info.uv_index
         return res
     def __refresh_power_icon(self, prop_name):
@@ -243,23 +254,37 @@ class DisplayUpdater:
             try:
                 self.__draw_icon(self.__power_icons[self.__gpio.power_status]['draw'], (2,8))
                 self.__refresh_display()
+                self.__logger.debug('Image update triggered by power state change')
             except Exception as ex:
-                #TODO: loggare errore
+                self.__logger.error('Fail to update image due to a power state change with error {0}'.format(ex))
                 pass
     def __draw_digit(self, font, position, clean_value, value):
-        self.__screen_image.paste(font['clear'], position, font[clean_value])
-        if value != None:
-            self.__screen_image.paste(font['draw'], position, font[value])
+        try:
+            self.__screen_image.paste(font['clear'], position, font[clean_value])
+            if value != None:
+                self.__screen_image.paste(font['draw'], position, font[value])
+        except Exception as ex:
+            self.__logger.error('Fail to draw digit with error {0}'.format(ex))
     def __draw_label(self, font, position, value):
-        self.__screen_image.paste(font['clear'], position)
-        if value != None:
-            self.__screen_image.paste(font['draw'], position, font[value])
+        try:
+            self.__screen_image.paste(font['clear'], position)
+            if value != None:
+                self.__screen_image.paste(font['draw'], position, font[value])
+        except Exception as ex:
+            self.__logger.error('Fail to draw label with error {0}'.format(ex))
     def __draw_icon(self, icon, position):
-        self.__screen_image.paste(icon, position)
+        try: 
+            self.__screen_image.paste(icon, position)
+        except Exception as ex:
+            self.__logger.error('Fail to draw icon with error {0}'.format(ex))
     def __refresh_display(self):
-        self.__display.set_image(self.__screen_image)
-        self.__display.show()
+        try:
+            self.__display.set_image(self.__screen_image)
+            self.__display.show()
+        except Exception as ex:
+            self.__logger.error('Fail to refresh display with error {0}'.format(ex))
     def update(self):
+        self.__logger.debug('Check for display image update')
         refresh_needed = False
         refresh_needed |= self.__refresh_temperature()
         refresh_needed |= self.__refresh_humidity()
@@ -270,4 +295,7 @@ class DisplayUpdater:
         refresh_needed |= self.__refresh_moon_phase()
         refresh_needed |= self.__refresh_uv_index()
         if refresh_needed:
+            self.__logger.debug('Updating display image')
             self.__refresh_display()
+        else:
+            self.__logger.debug('Update not required for display image')
