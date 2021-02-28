@@ -1,11 +1,13 @@
 import gpiozero
 from Enums import Input
+import logging
 
 #TODO: loggare
 #TODO: modificare funzionamento, non serve il polling, non sarà più un updater
 
 class GpioUpdater:
     def __init__(self, pin_factory=None):
+        self.__logger = logging.getLogger(self.__class__.__name__)
         self.__changes_registry = []
         self.__main_line = gpiozero.Button(pin=5, pull_up=False, pin_factory=pin_factory)
         self.__low_battery = gpiozero.Button(pin=6, pull_up=False, pin_factory=pin_factory)
