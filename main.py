@@ -7,7 +7,7 @@ from Radio import Radio
 from RadioApiController import RadioApiController
 from WeatherUpdater import WeatherUpdater
 from MoonUpdater import MoonUpdater
-from GpioUpdater import GpioUpdater
+from GpioManager import GpioManager
 from DisplayUpdater import DisplayUpdater
 from ApiManager import ApiManager
 import signal
@@ -67,9 +67,9 @@ try:
     main_logger.debug('Create {0} instance'.format(WeatherUpdater.__name__))
     moon_updater = MoonUpdater()
     main_logger.debug('Create {0} instance'.format(MoonUpdater.__name__))
-    gpio_updater = GpioUpdater()
-    main_logger.debug('Create {0} instance'.format(GpioUpdater.__name__))
-    display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater, weather_updater, moon_updater, gpio_updater)
+    gpio_manager = GpioManager()
+    main_logger.debug('Create {0} instance'.format(GpioManager.__name__))
+    display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater, weather_updater, moon_updater, gpio_manager)
     main_logger.debug('Create {0} instance'.format(DisplayUpdater.__name__))
     #initialize other tasks
     update_scheduler = UpdateScheduler()
@@ -78,7 +78,6 @@ try:
     update_scheduler.add_task(5, database_updater)
     update_scheduler.add_task(60 * 60 * 3, weather_updater) #3 hours
     update_scheduler.add_task(60 * 60 * 3, moon_updater) #3 hours
-    update_scheduler.add_task(0.25, gpio_updater)
     update_scheduler.add_task(5 * 60, display_updater) #5 minutes
     main_logger.debug('Add tasks to task scheduler')
     #initialize homekit publisher

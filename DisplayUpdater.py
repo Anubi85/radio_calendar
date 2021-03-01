@@ -41,7 +41,7 @@ class DisplayUpdater:
         self.__weather_info = weather_info
         self.__moon_info = moon_info
         self.__gpio = gpio
-        self.__gpio.register_for_changes(self.__refresh_power_icon)
+        self.__gpio.register_for_changes(self.__on_power_state_changed)
         self.__display = InkyPHAT('yellow')
         self.__display.set_border(InkyPHAT.BLACK)
         self.__screen_image = Image.open(self.__resources['background'])
@@ -77,6 +77,8 @@ class DisplayUpdater:
         self.__old_next_moon_phase = None
         self.__old_next_moon_phase_date = None
         self.__old_uv_index = None
+        #set default power icon icon (battery low)
+        self.__refresh_power_icon(False)
 
     @staticmethod
     def __get_digits(value, length, is_integer):
@@ -249,16 +251,21 @@ class DisplayUpdater:
             self.__logger.debug('Image update triggered by uv index change')
         self.__old_uv_index = self.__weather_info.uv_index
         return res
-    def __refresh_power_icon(self, prop_name):
+    def __on_power_state_changed(self, prop_name):
         if prop_name == Input.PowerState:
-            try:
-                self.__draw_icon(self.__power_icons[self.__gpio.power_status]['draw'], (2,8))
+            self.__logger.debug('Power state changed check for display update')
+            self.__refresh_power_icon(True)
+    def __refresh_power_icon(self, update_display):
+        try:
+            self.__draw_icon(self.__power_icons[self.__gpio.power_state]['draw'], (2,8))
+            if update_display:
                 self.__refresh_display()
                 self.__logger.debug('Image update triggered by power state change')
-            except Exception as ex:
-                self.__logger.error('Fail to update image due to a power state change with error {0}'.format(ex))
-                self.__logger.exception(ex)
-                pass
+            else:
+                self.__logger.debug('Image update disabled by caller')
+        except Exception as ex:
+            self.__logger.error('Fail to update image due to a power state change with error {0}'.format(ex))
+            self.__logger.exception(ex)
     def __draw_digit(self, font, position, clean_value, value):
         try:
             self.__screen_image.paste(font['clear'], position, font[clean_value])
