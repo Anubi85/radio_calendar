@@ -24,7 +24,7 @@ class Radio:
         self.__logger = logging.getLogger(self.__class__.__name__)
         self.__mpd_client = mpd.MPDClient()
         self.__stations_db = stations_db
-        self.__current_pos = None
+        self.__current_pos = 1 if len(stations_db) != 0 else None
 
 #mpc private methods
     def __exec_mpd_command(self, cmd, *cmd_args):
