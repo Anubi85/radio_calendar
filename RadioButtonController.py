@@ -1,4 +1,4 @@
-from Enums import Input
+from Enums import StationTag
 import logging
 import gpiozero
 
@@ -33,14 +33,22 @@ class RadioButtonController:
         self.__radio.stop()
     def __on_next(self):
         self.__logger.debug('Next button pressed')
-        new_pos = self.__radio.get_next_station()
-        self.__radio.set_current(new_pos)
-        self.__radio.play()
+        new_station = self.__radio.get_next_station()
+        if new_station:
+            new_pos = new_station[StationTag.Position]
+            self.__radio.set_current(new_pos)
+            self.__radio.play()
+        else:
+            self.__logger.warning('Next station not found')
     def __on_prev(self):
         self.__logger.debug('Previous button pressed')
-        new_pos = self.__radio.get_prev_station()
-        self.__radio.set_current(new_pos)
-        self.__radio.play()
+        new_station = self.__radio.get_prev_station()
+        if new_station:
+            new_pos = new_station[StationTag.Position]
+            self.__radio.set_current(new_pos)
+            self.__radio.play()
+        else:
+            self.__logger.warning('Previous station not found')
     def __on_volume_up(self):
         self.__logger.debug('Volume Up button pressed')
         self.__radio.change_volume(10)

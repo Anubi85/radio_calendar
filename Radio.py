@@ -25,6 +25,7 @@ class Radio:
         self.__mpd_client = mpd.MPDClient()
         self.__stations_db = stations_db
         self.__current_pos = 1 if len(stations_db) != 0 else None
+        self.__exec_func(self.__stop)
 
 #mpc private methods
     def __exec_mpd_command(self, cmd, *cmd_args):
@@ -70,7 +71,7 @@ class Radio:
         song_id = mpd_state.get('songid', None)
         if song_id:
             song_info = self.__exec_mpd_command(MpdCommand.GetSongInfo, song_id)
-            state[MpdStateTag.Title] = song_info.get('title', None)
+            state[MpdStateTag.Title] = song_info[0].get('title', None)
         else:
             state[MpdStateTag.Title] = None
         return state

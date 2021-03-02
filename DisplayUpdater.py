@@ -87,7 +87,7 @@ class DisplayUpdater:
         self.__battery_low.when_deactivated = self.__on_power_state_changed
         #set default power icon icon (battery low)
         self.__power_state = DisplayUpdater.BATTERY_LOW
-        self.__refresh_power_icon(False)
+        self.__on_power_state_changed()
 
     @staticmethod
     def __get_digits(value, length, is_integer):
@@ -260,7 +260,7 @@ class DisplayUpdater:
             self.__logger.debug('Image update triggered by uv index change')
         self.__old_uv_index = self.__weather_info.uv_index
         return res
-    def __on_power_state_changed(self, prop_name):
+    def __on_power_state_changed(self):
         main_line = self.__main_line.is_pressed
         battery_full = self.__battery_low.is_pressed
         self.__logger.debug('Power Source: {0}'.format('Main Line' if main_line else 'Battery'))
@@ -272,19 +272,14 @@ class DisplayUpdater:
         else:
             new_power_state = DisplayUpdater.BATTERY_LOW
         if new_power_state != self.__power_state:
+            self.__logger.debug('Image update triggered by power state change')
             self.__power_state = new_power_state
-            self.__refresh_power_icon(True)
-    def __refresh_power_icon(self, update_display):
-        try:
-            self.__draw_icon(self.__power_icons[self.__power_state]['draw'], (2,8))
-            if update_display:
+            try:
+                self.__draw_icon(self.__power_icons[self.__power_state]['draw'], (2,8))
                 self.__refresh_display()
-                self.__logger.debug('Image update triggered by power state change')
-            else:
-                self.__logger.debug('Image update disabled by caller')
-        except Exception as ex:
-            self.__logger.error('Fail to update image due to a power state change with error {0}'.format(ex))
-            self.__logger.exception(ex)
+            except Exception as ex:
+                self.__logger.error('Fail to update image due to a power state change with error {0}'.format(ex))
+                self.__logger.exception(ex)
     def __draw_digit(self, font, position, clean_value, value):
         try:
             self.__screen_image.paste(font['clear'], position, font[clean_value])
