@@ -1,9 +1,9 @@
 from inky import InkyPHAT
 from PIL import Image
-from Enums import Input
 import time
 import os
 import logging
+import gpiozero
 
 class Font:
     def __init__(self, masks_path):
@@ -34,14 +34,15 @@ class Icon:
             return None
 
 class DisplayUpdater:
-    def __init__(self, display_resources, sensors, weather_info, moon_info, gpio):
+    BATTERY_LOW = 'battery-low'
+    BATTERY_FULL = 'battery-full'
+    MAIN_LINE = 'main-line'
+    def __init__(self, display_resources, sensors, weather_info, moon_info):
         self.__logger = logging.getLogger(self.__class__.__name__)
         self.__resources = display_resources
         self.__sensors = sensors
         self.__weather_info = weather_info
         self.__moon_info = moon_info
-        self.__gpio = gpio
-        self.__gpio.register_for_changes(self.__on_power_state_changed)
         self.__display = InkyPHAT('yellow')
         self.__display.set_border(InkyPHAT.BLACK)
         self.__screen_image = Image.open(self.__resources['background'])
@@ -77,7 +78,15 @@ class DisplayUpdater:
         self.__old_next_moon_phase = None
         self.__old_next_moon_phase_date = None
         self.__old_uv_index = None
+        #initialize gpio ofr power monitoring
+        self.__main_line = gpiozero.Button(pin=5, pull_up=False)
+        self.__main_line.when_activated = self.__on_power_state_changed
+        self.__main_line.when_deactivated = self.__on_power_state_changed
+        self.__battery_low = gpiozero.Button(pin=6, pull_up=False)
+        self.__battery_low.when_activated = self.__on_power_state_changed
+        self.__battery_low.when_deactivated = self.__on_power_state_changed
         #set default power icon icon (battery low)
+        self.__power_state = DisplayUpdater.BATTERY_LOW
         self.__refresh_power_icon(False)
 
     @staticmethod
@@ -252,12 +261,22 @@ class DisplayUpdater:
         self.__old_uv_index = self.__weather_info.uv_index
         return res
     def __on_power_state_changed(self, prop_name):
-        if prop_name == Input.PowerState:
-            self.__logger.debug('Power state changed check for display update')
+        main_line = self.__main_line.is_pressed
+        battery_full = self.__battery_low.is_pressed
+        self.__logger.debug('Power Source: {0}'.format('Main Line' if main_line else 'Battery'))
+        self.__logger.debug('Battery State: {0}'.format('Full' if battery_full else 'Low'))
+        if main_line:
+            new_power_state = DisplayUpdater.MAIN_LINE
+        elif battery_full:
+            new_power_state = DisplayUpdater.BATTERY_FULL
+        else:
+            new_power_state = DisplayUpdater.BATTERY_LOW
+        if new_power_state != self.__power_state:
+            self.__power_state = new_power_state
             self.__refresh_power_icon(True)
     def __refresh_power_icon(self, update_display):
         try:
-            self.__draw_icon(self.__power_icons[self.__gpio.power_state]['draw'], (2,8))
+            self.__draw_icon(self.__power_icons[self.__power_state]['draw'], (2,8))
             if update_display:
                 self.__refresh_display()
                 self.__logger.debug('Image update triggered by power state change')

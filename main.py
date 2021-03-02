@@ -8,7 +8,6 @@ from RadioApiController import RadioApiController
 from RadioButtonController import RadioButtonController
 from WeatherUpdater import WeatherUpdater
 from MoonUpdater import MoonUpdater
-from GpioManager import GpioManager
 from DisplayUpdater import DisplayUpdater
 from ApiManager import ApiManager
 import signal
@@ -56,13 +55,11 @@ try:
     #initialize radio instance
     radio = Radio(db.table('radio-stations'))
     main_logger.debug('Create {0} instance'.format(Radio.__name__))
-    gpio_manager = GpioManager()
-    main_logger.debug('Create {0} instance'.format(GpioManager.__name__))
     #initialize radio REST API controller
     radio_api_controller = RadioApiController(radio)
     main_logger.debug('Create {0} instance'.format(RadioApiController.__name__))
     #initialize radio buttons controller
-    radio_buttons_controller = RadioButtonController(radio, gpio_manager)
+    radio_buttons_controller = RadioButtonController(radio)
     main_logger.debug('Create {0} instance'.format(RadioButtonController.__name__))
     #initialize updaters
     sensor_updater = SensorUpdater()
@@ -73,7 +70,7 @@ try:
     main_logger.debug('Create {0} instance'.format(WeatherUpdater.__name__))
     moon_updater = MoonUpdater()
     main_logger.debug('Create {0} instance'.format(MoonUpdater.__name__))
-    display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater, weather_updater, moon_updater, gpio_manager)
+    display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater, weather_updater, moon_updater)
     main_logger.debug('Create {0} instance'.format(DisplayUpdater.__name__))
     #initialize other tasks
     update_scheduler = UpdateScheduler()

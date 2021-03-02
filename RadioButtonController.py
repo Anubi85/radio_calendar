@@ -1,36 +1,49 @@
 from Enums import Input
 import logging
+import gpiozero
 
 class RadioButtonController:
-    def __init__(self, radio, gpio):
+    def __init__(self, radio):
         self.__logger = logging.getLogger(self.__class__.__name__)
         self.__radio = radio
-        self.__gpio = gpio
-        self.__gpio.register_for_changes(self.__on_button_pressed)
-        self.__actions = {}
-        self.__actions[Input.Play] = self.__on_play
-        self.__actions[Input.Stop] = self.__on_stop
-        self.__actions[Input.Next] = self.__on_next
-        self.__actions[Input.Prev] = self.__on_prev
-        self.__actions[Input.VolUp] = self.__on_volume_up
-        self.__actions[Input.VolDown] = self.__on_volume_down
+        #play
+        self.__btn_play = gpiozero.Button(pin=12)
+        self.__btn_play.when_activated = self.__on_play
+        #stop
+        self.__btn_stop = gpiozero.Button(pin=25)
+        self.__btn_stop.when_activated = self.__on_stop
+        #volume up
+        self.__btn_volume_up = gpiozero.Button(pin=26)
+        self.__btn_volume_up.when_activated = self.__on_volume_up
+        #volume down
+        self.__btn_volume_down = gpiozero.Button(pin=20)
+        self.__btn_volume_down.when_activated = self.__on_volume_down
+        #next
+        self.__btn_next = gpiozero.Button(pin=16)
+        self.__btn_next.when_activated = self.__on_next
+        #previous
+        self.__btn_previous = gpiozero.Button(pin=13)
+        self.__btn_previous.when_activated = self.__on_prev
     
-    #TODO: implementare funzioni
     def __on_play(self):
-        pass
+        self.__logger.debug('Play button pressed')
+        self.__radio.play()
     def __on_stop(self):
-        pass
+        self.__logger.debug('Stop button pressed')
+        self.__radio.stop()
     def __on_next(self):
-        pass
+        self.__logger.debug('Next button pressed')
+        new_pos = self.__radio.get_next_station()
+        self.__radio.set_current(new_pos)
+        self.__radio.play()
     def __on_prev(self):
-        pass
+        self.__logger.debug('Previous button pressed')
+        new_pos = self.__radio.get_prev_station()
+        self.__radio.set_current(new_pos)
+        self.__radio.play()
     def __on_volume_up(self):
-        pass
+        self.__logger.debug('Volume Up button pressed')
+        self.__radio.change_volume(10)
     def __on_volume_down(self):
-        pass
-
-    def __on_button_pressed(self, prop_name):        
-        action = self.__actions.get(prop_name, None)
-        if action:
-            self.__logger.debug('Button {0} pressed'.format(prop_name))
-            action()
+        self.__logger.debug('Volume Down button pressed')
+        self.__radio.change_volume(-10)
