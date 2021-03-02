@@ -86,7 +86,7 @@ class DisplayUpdater:
         self.__battery_low.when_activated = self.__on_power_state_changed
         self.__battery_low.when_deactivated = self.__on_power_state_changed
         #set default power icon icon (battery low)
-        self.__power_state = DisplayUpdater.BATTERY_LOW
+        self.__power_state = None
         self.__on_power_state_changed()
 
     @staticmethod
