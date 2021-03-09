@@ -29,7 +29,7 @@ class MoonUpdater:
             self.__current_phase = MoonUpdater.FULL_MOON
     def update(self):
         self.__logger.debug('Updating moon phase data')
-        if ephem.now().datetime() > self.next_moon_phase_date:
+        if ephem.now().datetime().date() >= self.next_moon_phase_date:
             self.__current_phase = self.next_moon_phase
     @property
     def next_moon_phase(self):
@@ -44,11 +44,11 @@ class MoonUpdater:
     @property
     def next_moon_phase_date(self):
         if self.__current_phase == MoonUpdater.NEW_MOON:
-            return ephem.next_first_quarter_moon(ephem.now()).datetime()
+            return ephem.next_first_quarter_moon(ephem.now()).datetime().date()
         elif self.__current_phase == MoonUpdater.FIRST_QUARTER_MOON:
-            return ephem.next_full_moon(ephem.now()).datetime()
+            return ephem.next_full_moon(ephem.now()).datetime().date()
         elif self.__current_phase == MoonUpdater.FULL_MOON:
-            return ephem.next_last_quarter_moon(ephem.now()).datetime()
+            return ephem.next_last_quarter_moon(ephem.now()).datetime().date()
         elif self.__current_phase == MoonUpdater.LAST_QUARTER_MOON:
-            return ephem.next_new_moon(ephem.now()).datetime()
+            return ephem.next_new_moon(ephem.now()).datetime().date()
         
