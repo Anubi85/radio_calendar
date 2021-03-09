@@ -62,7 +62,7 @@ try:
     radio_buttons_controller = RadioButtonController(radio)
     main_logger.debug('Create {0} instance'.format(RadioButtonController.__name__))
     #initialize updaters
-    sensor_updater = SensorUpdater()
+    sensor_updater = SensorUpdater(db.table('sensors-compensation').get(doc_id=1))
     main_logger.debug('Create {0} instance'.format(SensorUpdater.__name__))
     database_updater = DatabaseUpdater(db.table('influxdb-connection').get(doc_id=1), sensor_updater)
     main_logger.debug('Create {0} instance'.format(DatabaseUpdater.__name__))
