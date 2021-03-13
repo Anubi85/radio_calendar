@@ -29,7 +29,7 @@ class MoonUpdater:
             self.__current_phase = MoonUpdater.FULL_MOON
     def update(self):
         self.__logger.debug('Updating moon phase data')
-        if ephem.now().datetime().date() >= self.next_moon_phase_date:
+        if ephem.now().datetime().date() > self.next_moon_phase_date:
             self.__current_phase = self.next_moon_phase
     @property
     def next_moon_phase(self):
