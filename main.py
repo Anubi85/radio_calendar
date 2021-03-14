@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 from UpdateScheduler import UpdateScheduler
+from UpdateSchedulerApiController import UpdateSchedulerApiController
 from SensorUpdater import SensorUpdater
 from DatabaseUpdater import DatabaseUpdater
 from HapPublisher import HapPublisher
@@ -15,6 +16,7 @@ import logging, logging.handlers
 import sys
 import os
 import time
+import datetime
 import tinydb
 
 #configure logging
@@ -72,20 +74,25 @@ try:
     main_logger.debug('Create {0} instance'.format(MoonUpdater.__name__))
     display_updater = DisplayUpdater(db.table('display-resources').get(doc_id=1), sensor_updater, weather_updater, moon_updater)
     main_logger.debug('Create {0} instance'.format(DisplayUpdater.__name__))
-    #initialize other tasks
+    #initialize update scheduler
     update_scheduler = UpdateScheduler()
     main_logger.debug('Create {0} instance'.format(UpdateScheduler.__name__))
+    #initialize update scheduler REST API controller
+    update_scheduler_controller = UpdateSchedulerApiController(update_scheduler)
+    main_logger.debug('Create {0} instance'.format(UpdateSchedulerApiController.__name__))
+    #add task to update scheduler
     update_scheduler.add_task(2, sensor_updater)
     update_scheduler.add_task(5, database_updater)
     update_scheduler.add_task(60 * 60 * 3, weather_updater) #3 hours
     update_scheduler.add_task(60 * 60 * 3, moon_updater) #3 hours
     update_scheduler.add_task(5 * 60, display_updater) #5 minutes
-    main_logger.debug('Add tasks to task scheduler')
+    update_scheduler.add_task_absolute(datetime.time(0, 0, 0), display_updater)
+    main_logger.debug('Tasks added to task scheduler')
     #initialize homekit publisher
     hap_publisher = HapPublisher(sensor_updater)
     main_logger.debug('Create {0} instance'.format(HapPublisher.__name__))
     #initialize REST API server
-    api_manager = ApiManager(radio_api_controller)
+    api_manager = ApiManager(radio_api_controller, update_scheduler_controller)
     main_logger.debug('Create {0} instance'.format(ApiManager.__name__))
     main_logger.info('Components initialized')
 except Exception as ex:
