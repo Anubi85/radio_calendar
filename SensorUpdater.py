@@ -34,19 +34,17 @@ class SensorUpdater:
             self.__logger.error('Sensor update fail with error {0}'.format(ex))
             self.__logger.exception(ex)
     @property
-    def bme280_temperature(self):
+    def _delta_temperature(self):
         if self.__cpu_temperature != 0:
-            delta = self.__compute_compendation(self.__cpu_temperature, 'bme280', 'temperature')
-            return self.__bme280.temperature + delta
+            return self.__cpu_temperature - self.__bme280.temperature
         else:
-            return self.__bme280.temperature
+            return 0
+    @property
+    def bme280_temperature(self):
+        return self.__bme280.temperature + self._delta_temperature / self.__compensation_data['bme280']['temperature']
     @property
     def bme280_humidity(self):
-        if self.__cpu_temperature != 0:
-            delta = self.__compute_compendation(self.__cpu_temperature, 'bme280', 'humidity')
-            return self.__bme280.humidity + delta
-        else:
-            return self.__bme280.humidity
+        return self.__bme280.humidity + self._delta_temperature / self.__compensation_data['bme280']['humidity']
     @property
     def bme280_pressure(self):
         return self.__bme280.pressure
@@ -58,8 +56,3 @@ class SensorUpdater:
         except Exception as ex:
             self.__logger.error('Fail to retrieve cpu temperature with error {0}'.format(ex))
             return None
-    def __compute_compendation(self, x, sensor, measure):
-        res = 0
-        for deg, coef in enumerate(self.__compensation_data[sensor][measure]):
-            res += coef * x**deg
-        return res
