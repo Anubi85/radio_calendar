@@ -2,7 +2,7 @@
 from UpdateScheduler import UpdateScheduler
 from UpdateSchedulerApiController import UpdateSchedulerApiController
 from SensorUpdater import SensorUpdater
-from DatabaseUpdater import DatabaseUpdater
+from MqttUpdater import MqttUpdater
 from HapPublisher import HapPublisher
 from Radio import Radio
 from RadioApiController import RadioApiController
@@ -66,8 +66,8 @@ try:
     #initialize updaters
     sensor_updater = SensorUpdater(db.table('sensors-compensation').get(doc_id=1))
     main_logger.debug('Create {0} instance'.format(SensorUpdater.__name__))
-    database_updater = DatabaseUpdater(db.table('influxdb-connection').get(doc_id=1), sensor_updater)
-    main_logger.debug('Create {0} instance'.format(DatabaseUpdater.__name__))
+    mqtt_updater = MqttUpdater(db.table('mqtt').get(doc_id=1), sensor_updater)
+    main_logger.debug('Create {0} instance'.format(MqttUpdater.__name__))
     weather_updater = WeatherUpdater(db.table('owm-info').get(doc_id=1))
     main_logger.debug('Create {0} instance'.format(WeatherUpdater.__name__))
     moon_updater = MoonUpdater()
@@ -82,7 +82,7 @@ try:
     main_logger.debug('Create {0} instance'.format(UpdateSchedulerApiController.__name__))
     #add task to update scheduler
     update_scheduler.add_task(2, sensor_updater)
-    update_scheduler.add_task(5, database_updater)
+    update_scheduler.add_task(5, mqtt_updater)
     update_scheduler.add_task(60 * 60 * 3, weather_updater) #3 hours
     update_scheduler.add_task(60 * 60 * 3, moon_updater) #3 hours
     update_scheduler.add_task(5 * 60, display_updater) #5 minutes
